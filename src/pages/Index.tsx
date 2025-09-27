@@ -2,10 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
+import { DoodleJumpGame, SuperMarioGame, GeometryDashGame } from '@/components/GameEngine';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
+  const [currentGame, setCurrentGame] = useState<string | null>(null);
+  const [showGameDialog, setShowGameDialog] = useState(false);
+  const [gameScores, setGameScores] = useState<{[key: string]: number}>({});
+  const [settings, setSettings] = useState({
+    sound: true,
+    music: true,
+    vibration: false,
+    difficulty: 'medium'
+  });
 
   const Navigation = () => (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-retro-electric/30">
@@ -48,6 +59,7 @@ const Index = () => {
         <Button 
           size="lg" 
           className="font-orbitron text-lg bg-gradient-to-r from-retro-orange to-retro-pink hover:from-retro-pink hover:to-retro-orange animate-retro-glow transition-all duration-300"
+          onClick={() => setActiveSection('games')}
         >
           <Icon name="Play" className="mr-2" />
           НАЧАТЬ ИГРУ
@@ -82,7 +94,10 @@ const Index = () => {
         </div>
         <Button 
           className="w-full font-orbitron bg-retro-blue hover:bg-retro-electric text-white"
-          onClick={() => window.open(`#game-${gameKey}`, '_self')}
+          onClick={() => {
+            setCurrentGame(gameKey);
+            setShowGameDialog(true);
+          }}
         >
           ИГРАТЬ
         </Button>
@@ -174,26 +189,52 @@ const Index = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <span className="font-orbitron text-retro-electric">Звук</span>
-                <Button variant="outline" size="sm" className="border-retro-orange text-retro-orange">
-                  ВКЛ
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={`${settings.sound ? 'border-retro-orange text-retro-orange' : 'border-retro-electric text-retro-electric'}`}
+                  onClick={() => setSettings(prev => ({ ...prev, sound: !prev.sound }))}
+                >
+                  {settings.sound ? 'ВКЛ' : 'ВЫКЛ'}
                 </Button>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-orbitron text-retro-electric">Музыка</span>
-                <Button variant="outline" size="sm" className="border-retro-orange text-retro-orange">
-                  ВКЛ
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={`${settings.music ? 'border-retro-orange text-retro-orange' : 'border-retro-electric text-retro-electric'}`}
+                  onClick={() => setSettings(prev => ({ ...prev, music: !prev.music }))}
+                >
+                  {settings.music ? 'ВКЛ' : 'ВЫКЛ'}
                 </Button>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-orbitron text-retro-electric">Вибрация</span>
-                <Button variant="outline" size="sm" className="border-retro-electric text-retro-electric">
-                  ВЫКЛ
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={`${settings.vibration ? 'border-retro-orange text-retro-orange' : 'border-retro-electric text-retro-electric'}`}
+                  onClick={() => setSettings(prev => ({ ...prev, vibration: !prev.vibration }))}
+                >
+                  {settings.vibration ? 'ВКЛ' : 'ВЫКЛ'}
                 </Button>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-orbitron text-retro-electric">Сложность</span>
-                <Button variant="outline" size="sm" className="border-retro-orange text-retro-orange">
-                  СРЕДНЯЯ
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-retro-orange text-retro-orange"
+                  onClick={() => {
+                    const difficulties = ['easy', 'medium', 'hard'];
+                    const currentIndex = difficulties.indexOf(settings.difficulty);
+                    const nextIndex = (currentIndex + 1) % difficulties.length;
+                    setSettings(prev => ({ ...prev, difficulty: difficulties[nextIndex] }));
+                  }}
+                >
+                  {settings.difficulty === 'easy' ? 'ЛЕГКАЯ' : 
+                   settings.difficulty === 'medium' ? 'СРЕДНЯЯ' : 'СЛОЖНАЯ'}
                 </Button>
               </div>
             </div>
@@ -228,6 +269,45 @@ const Index = () => {
       <Navigation />
       {renderContent()}
       
+      {/* Game Dialog */}
+      <Dialog open={showGameDialog} onOpenChange={setShowGameDialog}>
+        <DialogContent className="bg-black/90 border-retro-electric max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-orbitron text-retro-electric text-center">
+              {currentGame === 'doodle' ? 'DOODLE JUMP' :
+               currentGame === 'mario' ? 'SUPER MARIO JUMP' :
+               currentGame === 'geometry' ? 'GEOMETRY DASH' : ''}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4">
+            {currentGame === 'doodle' && (
+              <DoodleJumpGame 
+                onGameEnd={(score) => {
+                  setGameScores(prev => ({ ...prev, doodle: Math.max(prev.doodle || 0, score) }));
+                  setShowGameDialog(false);
+                }}
+              />
+            )}
+            {currentGame === 'mario' && (
+              <SuperMarioGame 
+                onGameEnd={(score) => {
+                  setGameScores(prev => ({ ...prev, mario: Math.max(prev.mario || 0, score) }));
+                  setShowGameDialog(false);
+                }}
+              />
+            )}
+            {currentGame === 'geometry' && (
+              <GeometryDashGame 
+                onGameEnd={(score) => {
+                  setGameScores(prev => ({ ...prev, geometry: Math.max(prev.geometry || 0, score) }));
+                  setShowGameDialog(false);
+                }}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-20 left-10 w-2 h-2 bg-retro-electric rounded-full animate-pulse"></div>
@@ -235,6 +315,19 @@ const Index = () => {
         <div className="absolute bottom-40 left-1/4 w-1.5 h-1.5 bg-retro-pink rounded-full animate-pulse"></div>
         <div className="absolute bottom-20 right-1/3 w-1 h-1 bg-retro-neon rounded-full animate-pulse"></div>
       </div>
+
+      {/* Footer with Creator Link */}
+      <footer className="fixed bottom-4 right-4 z-40">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="border-retro-electric/50 text-retro-electric/70 hover:border-retro-orange hover:text-retro-orange transition-all duration-300"
+          onClick={() => window.open('https://t.me/destru1lop', '_blank')}
+        >
+          <Icon name="MessageCircle" size={16} className="mr-2" />
+          @destru1lop
+        </Button>
+      </footer>
     </div>
   );
 };
