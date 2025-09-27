@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Get all reviews",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "reviews": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Add new review",
+      "method": "POST",
+      "path": "/",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "player_name": "TEST_PLAYER",
+        "game_name": "Doodle Jump",
+        "rating": 5,
+        "comment": "Отличная игра для тестирования!"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
