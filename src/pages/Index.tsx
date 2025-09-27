@@ -316,17 +316,8 @@ const Index = () => {
         <div className="absolute bottom-20 right-1/3 w-1 h-1 bg-retro-neon rounded-full animate-pulse"></div>
       </div>
 
-      {/* Footer with Links */}
-      <footer className="fixed bottom-4 right-4 z-40 flex flex-col gap-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="border-retro-electric/50 text-retro-electric/70 hover:border-retro-orange hover:text-retro-orange transition-all duration-300"
-          onClick={() => window.open('https://geometrydash.com', '_blank')}
-        >
-          <Icon name="Globe" size={16} className="mr-2" />
-          Официальный сайт ритмического платформера
-        </Button>
+      {/* Footer with Creator Link */}
+      <footer className="fixed bottom-4 right-4 z-40">
         <Button 
           variant="outline" 
           size="sm" 
